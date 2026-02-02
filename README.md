@@ -4,6 +4,19 @@
  Random idle triggered animations
  Trying to update the GPPlayer mode to select sequences from controller's menu
  Needs a way to read the csv files stored on controller's SD card and use them to play sequences
+
+
+- UART0 - SSC-32
+- UART1 - Pi Zero 2W
+- SerialPIO - ESP-NOW rx
+- Hanus.py needs updated to support new channel mapping, plus additional channels.
+- Once GPPlayer works as intended, Hanus.py will use sequences and for animations instead of preset strings of fake controller inputs
+- TFT Controller runs on Arduino Mega and outputs to ESP-NOW tx on UART1.
+- ESP-NOW just works as a dumb bridge- nothing else.
+ 
+
+ 
+ 
  
  The original:
 - Project Lynxmotion Phoenix
@@ -15,11 +28,3 @@
 - Kurt Eckhardt(KurtE) converted to C and Arduino
 - Kåre Halvorsen aka Zenta - Makes everything work correctly!
   
-- UART0 - SSC-32
-- UART1 - Pi Zero 2W
-- SerialPIO - ESP-NOW rx
-
-- Hanus.py needs updated to support new channel mapping, plus additional channels.
-- Once GPPlayer works as intended, Hanus.py will use sequences and for animations instead of preset strings of fake controller inputs
-- TFT Controller runs on Arduino Mega and outputs to ESP-NOW tx on UART1.
-- ESP-NOW just works as a dumb bridge- nothing else.
