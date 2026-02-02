@@ -437,13 +437,13 @@ void loop(void)
             //Wait for previous commands to be completed while walking
             wDelayTime = (min(max ((PrevSSCTime - CycleTime), 1), NomGaitSpeed));
 //            DBGPrintf("Delay: %d %d %d %d\n\r", (word)NomGaitSpeed, (word)CycleTime, (word)PrevSSCTime, (word)wDelayTime);
-            digitalWrite(3, HIGH);
+            // digitalWrite(3, HIGH);
             delay (wDelayTime); 
-            digitalWrite(3, LOW);
+            // digitalWrite(3, LOW);
         }
         
         ServoDriverCommit();
-        digitalWrite(2, LOW);            
+        // digitalWrite(2, LOW);            
 
     } else {
         //Turn the bot off
