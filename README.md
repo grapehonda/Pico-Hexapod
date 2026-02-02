@@ -1,9 +1,10 @@
- -WIP- pico port with extras
- Pi zero 2w takes control automatically when controller is off or switched to pi via controller toggle.
- Flask server talks to LLM- sentiment analysis triggers different poses/animations.
- Random idle triggered animations
- Trying to update the GPPlayer mode to select sequences from controller's menu
- Needs a way to read the csv files stored on controller's SD card and use them to play sequences
+ -WIP- pico port with extras.
+ 
+- Pi zero 2w takes control automatically when controller is off or switched to pi via controller toggle.
+- Flask server talks to LLM- sentiment analysis triggers different poses/animations.
+- Random idle triggered animations
+- Trying to update the GPPlayer mode to select sequences from controller's menu
+- Needs a way to read the csv files stored on controller's SD card and use them to play sequences
 
 
 - UART0 - SSC-32
