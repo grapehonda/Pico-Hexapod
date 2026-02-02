@@ -6,14 +6,14 @@
  Needs a way to read the csv files stored on controller's SD card and use them to play sequences
  
  The original:
-`Project Lynxmotion Phoenix
- Description: Phoenix software
- Software version: V2.0
- Date: 29-10-2009
- Programmer: 
- Jeroen Janssen [aka Xan]
- Kurt Eckhardt(KurtE) converted to C and Arduino
- Kåre Halvorsen aka Zenta - Makes everything work correctly!`   
+- Project Lynxmotion Phoenix
+- Description: Phoenix software
+- Software version: V2.0
+- Date: 29-10-2009
+- Programmer: 
+- Jeroen Janssen [aka Xan]
+- Kurt Eckhardt(KurtE) converted to C and Arduino
+- Kåre Halvorsen aka Zenta - Makes everything work correctly!
   
 - UART0 - SSC-32
 - UART1 - Pi Zero 2W
