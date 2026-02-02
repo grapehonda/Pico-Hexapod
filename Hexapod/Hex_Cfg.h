@@ -3,8 +3,8 @@
 
 
 //[SERIAL CONNECTIONS]
-#define cSSC_OUT         P19
-#define cSSC_IN          P18
+#define cSSC_OUT         0     //Pico TX GPIO0
+#define cSSC_IN          1     //PICO RX GPIO1
 #define cSSC_BAUD        115200     //SSC32 BAUD rate
 #define cSSC_BINARYMODE 0     // Define if your SSC-32 card supports binary mode.
 
