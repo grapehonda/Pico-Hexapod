@@ -3,6 +3,8 @@
 
 #include <Arduino.h>
 #include "Hex_Globals.h"
+#include <SerialPIO.h>
+SerialPIO WirelessSerial(8, 9);
 
 #define MAX_BODY_Y 100  // Max body height in mm
 #define NUM_GAITS 8     // 0-7 gaits
@@ -21,7 +23,7 @@ static bool WalkMethod;
 
 // Init Controller
 void InitController(void) {
-  Serial3.begin(115200);  // Wireless from ESP-RX
+  WirelessSerial.begin(115200);  // Wireless from ESP-RX was Serial3 on Mega
   Serial2.begin(100000);  // Match Pi baud rate
   Serial2.setTimeout(10); // Low timeout to avoid blocking
 
@@ -73,9 +75,9 @@ void ControlInput(void) {
   bool gotInput = false;
 
   // Try wireless (Serial3) first
-  if (Serial3.available() > 20) {  // Lowered threshold
+  if (WirelessSerial.available() > 20) {  // Lowered threshold
     char wirelessBuf[150] = {0};
-    int bytesRead = Serial3.readBytesUntil('\n', wirelessBuf, sizeof(wirelessBuf) - 1);
+    int bytesRead = WirelessSerial.readBytesUntil('\n', wirelessBuf, sizeof(wirelessBuf) - 1);
     if (bytesRead >= 38) {  // Min for 19 vals (~38 chars: "0,0,...\n")
       // Trim whitespace
       char* ptr = wirelessBuf;
@@ -133,13 +135,13 @@ void ControlInput(void) {
   byte bodyheightpot = values[6];   //ch7  Body Height
   byte gaitspeedpot = values[7];    //ch8  Gait Speed
   byte hexon = values[8];           //ch9  HexOn
-  // ch10 ignored here, used for source select)
-  byte modeselect = values[10];     //ch11 Mode Select
+  //ch10 Ignored here, now used for Pi/Controller switch)
+  byte modeselect = values[10];     //ch11 Mode Select Translate/Walk
   byte balancemode = values[11];    //ch12 Balance Mode
   byte doubletravel = values[12];   //ch13 Double Travel
   byte doubleleglift = values[13];  //ch14 Double Leg Lift Height
-  byte walkmeth = values[14];       //ch15 Walk Method
-  byte slhold = values[15];         //ch16 SL Hold
+  byte walkmeth = values[14];       //ch15 Walk Method 1/2
+  byte slhold = values[15];         //ch16 SingleLeg Hold
   byte gaitpreset = values[16];     //ch17 Gait Preset (0-7)
   byte selectedleg = values[17];    //ch18 Selected Leg (255 off, 0-5 legs)
   byte gpsequence = values[18];     //ch19 GP Sequence (0 off, 1+ sequence)
