@@ -316,6 +316,8 @@ void drawHexapod(int selected = -1) {
   tft.fillRoundRect(bodyX - bodyW/2, bodyY - bodyH/2, bodyW, bodyH, 10, ILI9341_CYAN);
   tft.drawRoundRect(bodyX - bodyW/2, bodyY - bodyH/2, bodyW, bodyH, 10, ILI9341_WHITE);
 
+  
+  // Need to reorder this part: 1 RR, 2 RM, 3 RF, 4 LR, 5 LM, 6 LF
   // Legs: 1 RF, 2 RM, 3 RR, 4 LF, 5 LM, 6 LR
   // Each leg: body -> coxa joint -> femur joint -> tibia end -> foot triangle
   // Adjusted positions to spread out more and reduce overlap
