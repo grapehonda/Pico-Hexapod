@@ -1,4 +1,13 @@
 //=============================================================================
+//Project Lynxmotion Phoenix
+//Description: Phoenix software
+//Software version: V2.0
+//Date: 29-10-2009
+//Programmer: Jeroen Janssen [aka Xan]
+//         Kurt Eckhardt(KurtE) converted to C and Arduino
+//   Kåre Halvorsen aka Zenta - Makes everything work correctly!     
+//
+//=============================================================================
 // Header Files
 //=============================================================================
 #include "Input_Wireless.h"
@@ -1332,6 +1341,7 @@ int DBGPrintf(const char *format, ...)
     ich = vsprintf(szTemp, format, ap);
     DBGSerial.write((byte*)szTemp, ich);
     va_end(ap);
+	return 0;
 }
 
 // BUGBUG Place holder
@@ -1344,6 +1354,7 @@ int SSCPrintf(const char *format, ...)
     ich = vsprintf(szTemp, format, ap);
     SSCSerial.write((byte*)szTemp, ich);
     va_end(ap);
+	return 0;
 }
 
 // Quick and dirty helper function to read so many bytes in from the SSC with a timeout and an end of character marker...
