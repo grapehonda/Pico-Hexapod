@@ -4,7 +4,7 @@
 #include <Arduino.h>
 #include "Hex_Globals.h"
 #include <SerialPIO.h>
-SerialPIO WirelessSerial(8, 9);
+SerialPIO WirelessSerial(26, 27);
 
 #define MAX_BODY_Y 100  // Max body height in mm
 #define NUM_GAITS 8     // 0-7 gaits
