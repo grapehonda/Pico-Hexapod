@@ -1,10 +1,14 @@
+//SSC-32 on D0/D1 (TX1/RX1)
+//Pi Zero on D8/D9 (TX2/RX2)
+//ESP-NOW on D26/D27 (A0/A1)
+
 #ifndef INPUT_WIRELESS_H
 #define INPUT_WIRELESS_H
 
 #include <Arduino.h>
 #include "Hex_Globals.h"
 #include <SerialPIO.h>
-SerialPIO WirelessSerial(26, 27);
+SerialPIO WirelessSerial(26, 27); //A0/A1 for ESP-NOW
 
 #define MAX_BODY_Y 100  // Max body height in mm
 #define NUM_GAITS 8     // 0-7 gaits
