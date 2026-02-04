@@ -246,6 +246,8 @@ void setup(){
     int error;
 
     DBGSerial.begin(57600);
+    while (!DBGSerial) { delay(10); }  // Wait for monitor - un-drops prints
+    delay(500);  // Settle time
     SSCSerial.begin(115200);
 
 //Checks SSC version number if it ends with "GP"
