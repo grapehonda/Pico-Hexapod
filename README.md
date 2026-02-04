@@ -1,4 +1,4 @@
- -WIP- pico port with extras.
+ -WIP- pico port with extras- Currently state: not working.
  
 - Pi zero 2w takes control automatically when controller is off or switched to pi via controller toggle.
 - Flask server talks to LLM- sentiment analysis triggers different poses/animations.
