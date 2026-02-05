@@ -1,33 +1,31 @@
-//SSC-32 on D0/D1 (TX1/RX1)
-//Pi Zero on D8/D9 (TX2/RX2)
-//ESP-NOW on D26/D27 (A0/A1)
-
 #ifndef INPUT_WIRELESS_H
 #define INPUT_WIRELESS_H
 
 #include <Arduino.h>
-#include "Hex_Globals.h"
 #include <SerialPIO.h>
-SerialPIO WirelessSerial(26, 27); //A0/A1 for ESP-NOW
+#include "Hex_Globals.h"
 
 #define MAX_BODY_Y 100  // Max body height in mm
 #define NUM_GAITS 8     // 0-7 gaits
 #define WALKMODE 0
 #define TRANSLATEMODE 1
 #define SINGLELEGMODE 2
-#define GPPLAYERMODE 3
+#define GPPLAYERMODE 3 // Added back for GP sequence support
 
 #define cTravelDeadZone 20 // Deadzone for sticks
 
-// Global - Local to this file only
+// Global - Local to this file only...
 static unsigned g_BodyYOffset; 
 static byte ControlMode;
 static bool DoubleTravelOn;
 static bool WalkMethod;
 
+SerialPIO wireless(NOPIN, 16);
+
 // Init Controller
 void InitController(void) {
-  WirelessSerial.begin(115200);  // Wireless from ESP-RX was Serial3 on Mega
+  wireless.begin(57600);  // Wireless from ESP-RX
+  wireless.setTimeout(10);  // Short timeout to avoid blocking
   Serial2.begin(100000);  // Match Pi baud rate
   Serial2.setTimeout(10); // Low timeout to avoid blocking
 
@@ -65,64 +63,70 @@ bool parseBufferToValues(const char* buf, byte* values) {
   char* token = strtok(tempBuf, ",");
   int idx = 0;
   while (token && idx < 19) {
-    values[idx] = (byte)atoi(token);
+    if (strlen(token) > 3) return false;  // Mashed token check
+    int val = atoi(token);
+    if (val < 0 || val > 255) return false;
+    values[idx] = (byte)val;
     token = strtok(NULL, ",");
     idx++;
   }
-  return (idx == 19);  // Ensure exactly 19 values parsed
+  return (idx == 19);
 }
 
 // Control Input
 void ControlInput(void) {
   char inBuf[150] = {0};
-  byte values[19]; // Bumped to 19
+  byte values[19];
   bool gotInput = false;
+  static int successCount = 0;  // Counter for batched logging
+  int bytesRead = 0;
+  int commaCount = 0;
+  byte switch_val = 0;
 
-  // Try wireless (Serial3) first
-  if (WirelessSerial.available() > 20) {  // Lowered threshold
-    char wirelessBuf[150] = {0};
-    int bytesRead = WirelessSerial.readBytesUntil('\n', wirelessBuf, sizeof(wirelessBuf) - 1);
-    if (bytesRead >= 38) {  // Min for 19 vals (~38 chars: "0,0,...\n")
+  char debugStr[512] = {0};  // Batch debug here to print after read
+
+  // Try wireless first
+  if (wireless.available() > 20) {
+    wireless.flush();  // Clear stale
+    bytesRead = wireless.readBytesUntil('\n', inBuf, sizeof(inBuf) - 1);
+    if (bytesRead >= 40) {
       // Trim whitespace
-      char* ptr = wirelessBuf;
+      char* ptr = inBuf;
       while (*ptr == ' ' || *ptr == '\r' || *ptr == '\n') ptr++;
-      int commaCount = countCommas(ptr);
+      char* end = ptr + strlen(ptr) - 1;
+      while (end > ptr && (*end == ' ' || *end == '\r' || *end == '\n')) *end-- = '\0';
+      commaCount = countCommas(ptr);
       if (commaCount == 18 && parseBufferToValues(ptr, values)) {
-        byte switch_val = values[9];  // ch10: piControllerSwitch
-        if (switch_val > 127) {  // >127 for high (was 128, now >127 for tolerance)
-          // Use wireless
+        switch_val = values[9];
+        if (switch_val > 127) {
           gotInput = true;
-        } else {
-          // Switch low, try Pi
-          if (Serial2.available() > 20) {
-            char piBuf[150] = {0};
-            int piBytes = Serial2.readBytesUntil('\n', piBuf, sizeof(piBuf) - 1);
-            if (piBytes >= 38) {  // Added garbage check
-              char* piPtr = piBuf;
-              while (*piPtr == ' ' || *piPtr == '\r' || *piPtr == '\n') piPtr++;
-              int piCommaCount = countCommas(piPtr);
-              if (piCommaCount == 18 && parseBufferToValues(piPtr, values)) {
-                gotInput = true;
-              }
-            }
-          }
+          successCount++;
         }
       }
     }
   } else {
-    // No wireless, default to Pi if available and switch low (but since no wireless avail, check switch from last parse or default)
+    // No wireless, try Pi
     if (Serial2.available() > 20) {
-      char piBuf[150] = {0};
-      int piBytes = Serial2.readBytesUntil('\n', piBuf, sizeof(piBuf) - 1);
-      if (piBytes >= 38) {
-        char* piPtr = piBuf;
-        while (*piPtr == ' ' || *piPtr == '\r' || *piPtr == '\n') piPtr++;
-        int piCommaCount = countCommas(piPtr);
-        if (piCommaCount == 18 && parseBufferToValues(piPtr, values)) {
+      Serial2.flush();
+      bytesRead = Serial2.readBytesUntil('\n', inBuf, sizeof(inBuf) - 1);  // Use bytesRead for Pi too
+      if (bytesRead >= 40) {
+        char* ptr = inBuf;
+        while (*ptr == ' ' || *ptr == '\r' || *ptr == '\n') ptr++;
+        char* end = ptr + strlen(ptr) - 1;
+        while (end > ptr && (*end == ' ' || *end == '\r' || *end == '\n')) *end-- = '\0';
+        commaCount = countCommas(ptr);  // Use commaCount for Pi too
+        if (commaCount == 18 && parseBufferToValues(ptr, values)) {
           gotInput = true;
-        } 
+          successCount++;
+        }
       }
     }
+  }
+
+  // Batch debug and print only after read (every 10 successes to reduce USB TX)
+  if (gotInput && successCount % 10 == 0) {  // Print batched every 10 successes
+    sprintf(debugStr, "Avail: %d | Bytes: %d | Buf: %s | Commas: %d | Parse: %s | Switch: %d", wireless.available(), bytesRead, inBuf, commaCount, gotInput ? "OK" : "Fail", switch_val);
+    Serial.println(debugStr);
   }
 
   if (!gotInput) {
@@ -139,13 +143,13 @@ void ControlInput(void) {
   byte bodyheightpot = values[6];   //ch7  Body Height
   byte gaitspeedpot = values[7];    //ch8  Gait Speed
   byte hexon = values[8];           //ch9  HexOn
-  //ch10 Ignored here, now used for Pi/Controller switch)
-  byte modeselect = values[10];     //ch11 Mode Select Translate/Walk
+  // ch10 ignored here (piControllerSwitch, used for source select)
+  byte modeselect = values[10];     //ch11 Mode Select
   byte balancemode = values[11];    //ch12 Balance Mode
   byte doubletravel = values[12];   //ch13 Double Travel
   byte doubleleglift = values[13];  //ch14 Double Leg Lift Height
-  byte walkmeth = values[14];       //ch15 Walk Method 1/2
-  byte slhold = values[15];         //ch16 SingleLeg Hold
+  byte walkmeth = values[14];       //ch15 Walk Method
+  byte slhold = values[15];         //ch16 SL Hold
   byte gaitpreset = values[16];     //ch17 Gait Preset (0-7)
   byte selectedleg = values[17];    //ch18 Selected Leg (255 off, 0-5 legs)
   byte gpsequence = values[18];     //ch19 GP Sequence (0 off, 1+ sequence)
